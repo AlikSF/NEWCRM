@@ -10,6 +10,13 @@ export interface Lead {
   channel: Channel;
 }
 
+export interface Tour {
+  id: string;
+  name: string;
+  duration: string;
+  price: number;
+}
+
 export interface Booking {
   id: string;
   date: string;
@@ -19,6 +26,8 @@ export interface Booking {
   status: BookingStatus;
   notes?: string;
   pickupLocation?: string;
+  leadId?: string;
+  tourId?: string;
 }
 
 export interface KPIMetric {
