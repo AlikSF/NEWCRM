@@ -1,43 +1,29 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Search, Bell, Moon, Sun } from 'lucide-react';
 import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
-import {
-  InboxPage,
-  LeadsPage,
-  BookingsPage,
-  TeamPage,
-  SettingsPage,
-  ToursPage,
-  ReportsPage
+import { 
+  InboxPage, 
+  LeadsPage, 
+  BookingsPage, 
+  TeamPage, 
+  SettingsPage, 
+  ToursPage, 
+  ReportsPage 
 } from './components/PlaceholderPages';
 import { UPCOMING_BOOKINGS } from './constants';
-import { Booking, Notification } from './types';
+import { Booking } from './types';
 import Toast from './components/Toast';
-import NotificationDropdown from './components/NotificationDropdown';
 
-const Header = ({
-  searchTerm,
-  setSearchTerm,
-  notifications,
-  isNotificationOpen,
-  setIsNotificationOpen,
-  onMarkAllAsRead
-}: {
-  searchTerm: string;
-  setSearchTerm: (term: string) => void;
-  notifications: Notification[];
-  isNotificationOpen: boolean;
-  setIsNotificationOpen: (open: boolean) => void;
-  onMarkAllAsRead: () => void;
+const Header = ({ 
+  searchTerm, 
+  setSearchTerm 
+}: { 
+  searchTerm: string; 
+  setSearchTerm: (term: string) => void 
 }) => {
   const { theme, toggleTheme } = useTheme();
-  const unreadCount = notifications.filter(n => !n.isRead).length;
-
-  const handleBellClick = () => {
-    setIsNotificationOpen(!isNotificationOpen);
-  };
 
   return (
     <header className="sticky top-0 z-10 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 px-6 py-4 transition-colors duration-200">
@@ -59,29 +45,16 @@ const Header = ({
              </div>
            </div>
         </div>
-
+        
         <div className="flex items-center gap-3">
-          <div className="relative">
-            <button
-              onClick={handleBellClick}
-              className="relative p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-            >
-              <Bell className="w-5 h-5" />
-              {unreadCount > 0 && (
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white dark:ring-gray-900"></span>
-              )}
-            </button>
-            <NotificationDropdown
-              notifications={notifications}
-              isOpen={isNotificationOpen}
-              onClose={() => setIsNotificationOpen(false)}
-              onMarkAllAsRead={onMarkAllAsRead}
-            />
-          </div>
-
+          <button className="relative p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+            <Bell className="w-5 h-5" />
+            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white dark:ring-gray-900"></span>
+          </button>
+          
           <div className="h-6 w-px bg-gray-200 dark:bg-gray-700 mx-1"></div>
 
-          <button
+          <button 
             onClick={toggleTheme}
             className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
           >
@@ -93,46 +66,12 @@ const Header = ({
   );
 };
 
-const INITIAL_NOTIFICATIONS: Notification[] = [
-  {
-    id: '1',
-    message: 'New lead received – Sarah Jenkins',
-    timestamp: '5 min ago',
-    isRead: false
-  },
-  {
-    id: '2',
-    message: 'Booking confirmed – Sunset City Tour',
-    timestamp: '15 min ago',
-    isRead: false
-  },
-  {
-    id: '3',
-    message: 'Lead moved to Qualified – Marco Rossi',
-    timestamp: '1 hour ago',
-    isRead: false
-  }
-];
-
 function App() {
   const [activePage, setActivePage] = useState('dashboard');
   const [bookings, setBookings] = useState<Booking[]>(UPCOMING_BOOKINGS);
   const [toast, setToast] = useState({ message: '', visible: false });
   const [searchTerm, setSearchTerm] = useState('');
   const [initialLeadForInbox, setInitialLeadForInbox] = useState<string | null>(null);
-  const [notifications, setNotifications] = useState<Notification[]>(() => {
-    const stored = localStorage.getItem('tourcrm_notifications');
-    return stored ? JSON.parse(stored) : INITIAL_NOTIFICATIONS;
-  });
-  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
-
-  useEffect(() => {
-    localStorage.setItem('tourcrm_notifications', JSON.stringify(notifications));
-  }, [notifications]);
-
-  const markAllNotificationsAsRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
-  };
 
   const addBooking = (booking: Booking) => {
     setBookings(prev => [booking, ...prev]);
@@ -164,14 +103,7 @@ function App() {
 
         {/* Removed w-full to prevent overflow with ml-64. Added overflow-x-hidden as safety. */}
         <main className="flex-1 md:ml-64 min-h-screen flex flex-col relative overflow-x-hidden">
-          <Header
-            searchTerm={searchTerm}
-            setSearchTerm={setSearchTerm}
-            notifications={notifications}
-            isNotificationOpen={isNotificationOpen}
-            setIsNotificationOpen={setIsNotificationOpen}
-            onMarkAllAsRead={markAllNotificationsAsRead}
-          />
+          <Header searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
 
           <div className="flex-1 overflow-hidden flex flex-col">
             {activePage === 'dashboard' && (

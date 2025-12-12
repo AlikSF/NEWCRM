@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { X, Calendar, MapPin, Users, FileText, Flag, User } from 'lucide-react';
+import { X, Calendar, MapPin, Users, FileText, Flag } from 'lucide-react';
 import { Booking } from '../types';
-import { RECENT_LEADS, AVAILABLE_TOURS } from '../constants';
-import SearchableSelect from './SearchableSelect';
 
 interface CreateBookingModalProps {
   isOpen: boolean;
@@ -21,43 +19,27 @@ const CreateBookingModal: React.FC<CreateBookingModalProps> = ({
   bookingToEdit,
   onBookingUpdated
 }) => {
-  const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
-  const [selectedTourId, setSelectedTourId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
+    tourName: '',
     date: '',
     pax: 2,
     pickupLocation: '',
     notes: ''
   });
 
-  // Prepare options for SearchableSelect
-  const leadOptions = RECENT_LEADS.map(lead => ({
-    id: lead.id,
-    label: lead.name,
-    sublabel: `${lead.status} · ${lead.channel}`,
-  }));
-
-  const tourOptions = AVAILABLE_TOURS.map(tour => ({
-    id: tour.id,
-    label: tour.name,
-    sublabel: `${tour.duration} · $${tour.price}`,
-  }));
-
   // Populate form when editing or reset when creating
   useEffect(() => {
     if (bookingToEdit) {
-      setSelectedLeadId(bookingToEdit.leadId || null);
-      setSelectedTourId(bookingToEdit.tourId || null);
       setFormData({
+        tourName: bookingToEdit.tourName,
         date: bookingToEdit.date,
         pax: bookingToEdit.people,
         pickupLocation: bookingToEdit.pickupLocation || '',
         notes: bookingToEdit.notes || ''
       });
     } else {
-      setSelectedLeadId(null);
-      setSelectedTourId(null);
       setFormData({
+        tourName: '',
         date: new Date().toISOString().split('T')[0],
         pax: 2,
         pickupLocation: '',
@@ -70,43 +52,29 @@ const CreateBookingModal: React.FC<CreateBookingModalProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!selectedLeadId || !selectedTourId) {
-      return;
-    }
-
-    const selectedLead = RECENT_LEADS.find(l => l.id === selectedLeadId);
-    const selectedTour = AVAILABLE_TOURS.find(t => t.id === selectedTourId);
-
-    if (!selectedLead || !selectedTour) return;
-
+    
     if (bookingToEdit && onBookingUpdated) {
       // Handle Update
       const updatedBooking: Booking = {
         ...bookingToEdit,
-        tourName: selectedTour.name,
-        clientName: selectedLead.name,
+        tourName: formData.tourName,
         date: formData.date,
         people: formData.pax,
         pickupLocation: formData.pickupLocation,
-        notes: formData.notes,
-        leadId: selectedLeadId,
-        tourId: selectedTourId
+        notes: formData.notes
       };
       onBookingUpdated(updatedBooking);
     } else {
       // Handle Create
       const newBooking: Booking = {
         id: `B${Date.now()}`,
-        tourName: selectedTour.name,
+        tourName: formData.tourName,
         date: formData.date,
-        clientName: selectedLead.name,
+        clientName: leadName || 'Unknown Client',
         people: formData.pax,
         status: 'Pending',
         pickupLocation: formData.pickupLocation,
-        notes: formData.notes,
-        leadId: selectedLeadId,
-        tourId: selectedTourId
+        notes: formData.notes
       };
 
       if (onBookingCreated) {
@@ -146,25 +114,22 @@ const CreateBookingModal: React.FC<CreateBookingModalProps> = ({
           </div>
 
           <form onSubmit={handleSubmit} className="p-6 space-y-4">
-            <SearchableSelect
-              options={leadOptions}
-              value={selectedLeadId}
-              onChange={setSelectedLeadId}
-              placeholder="Select a client"
-              label="Client / Lead"
-              icon={<User className="w-4 h-4" />}
-              required
-            />
-
-            <SearchableSelect
-              options={tourOptions}
-              value={selectedTourId}
-              onChange={setSelectedTourId}
-              placeholder="Select a tour"
-              label="Tour"
-              icon={<Flag className="w-4 h-4" />}
-              required
-            />
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase mb-1.5">Tour Name</label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                   <Flag className="w-4 h-4 text-gray-400" />
+                </div>
+                <input 
+                  type="text" 
+                  required
+                  className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white bg-white dark:bg-gray-700/50 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  placeholder="e.g. Sunset City Tour"
+                  value={formData.tourName}
+                  onChange={e => setFormData({...formData, tourName: e.target.value})}
+                />
+              </div>
+            </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
