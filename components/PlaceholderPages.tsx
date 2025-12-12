@@ -971,9 +971,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ showToast }) => {
                currency: 'USD ($) - United States Dollar',
                emailLeads: true,
                emailBookings: true,
-               whatsappAlerts: false,
-               logo: '',
-               primaryColor: '#4F46E5'
+               whatsappAlerts: false
             };
          }
       }
@@ -984,45 +982,15 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ showToast }) => {
          currency: 'USD ($) - United States Dollar',
          emailLeads: true,
          emailBookings: true,
-         whatsappAlerts: false,
-         logo: '',
-         primaryColor: '#4F46E5'
+         whatsappAlerts: false
       };
    });
    const [isLoading, setIsLoading] = useState(false);
    const { language, setLanguage, t, setCurrency } = useI18n();
-   const fileInputRef = React.useRef<HTMLInputElement>(null);
-
-   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      if (file) {
-         if (file.size > 2 * 1024 * 1024) {
-            showToast?.('File size must be less than 2MB');
-            return;
-         }
-         const reader = new FileReader();
-         reader.onload = (event) => {
-            const result = event.target?.result as string;
-            setSettings({...settings, logo: result});
-         };
-         reader.readAsDataURL(file);
-      }
-   };
-
-   const handleLogoClick = () => {
-      fileInputRef.current?.click();
-   };
-
-   const handleColorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      setSettings({...settings, primaryColor: e.target.value});
-   };
 
    const handleSave = () => {
       setIsLoading(true);
       localStorage.setItem('tourcrm_settings', JSON.stringify(settings));
-
-      // Trigger event for other components to reload settings
-      window.dispatchEvent(new Event('settingsUpdated'));
 
       // Update currency in context
       const currencyMap = {
@@ -1244,51 +1212,21 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ showToast }) => {
                   <div className="p-6 flex flex-col md:flex-row gap-8 items-start">
                      <div className="flex-1 w-full">
                         <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Company Logo</label>
-                        <input
-                           ref={fileInputRef}
-                           type="file"
-                           accept="image/svg+xml,image/png,image/jpeg"
-                           onChange={handleLogoUpload}
-                           className="hidden"
-                        />
-                        <div
-                           onClick={handleLogoClick}
-                           className="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl p-8 flex flex-col items-center justify-center text-center hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer group"
-                        >
-                           {settings.logo ? (
-                              <div className="flex flex-col items-center gap-3">
-                                 <img src={settings.logo} alt="Company Logo" className="max-h-24 max-w-full object-contain" />
-                                 <p className="text-xs text-gray-500">Click to change logo</p>
-                              </div>
-                           ) : (
-                              <>
-                                 <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-900/20 rounded-full flex items-center justify-center text-indigo-500 mb-3 group-hover:scale-110 transition-transform">
-                                    <Upload className="w-5 h-5" />
-                                 </div>
-                                 <p className="text-sm font-medium text-gray-900 dark:text-white">Click to upload logo</p>
-                                 <p className="text-xs text-gray-500 mt-1">SVG, PNG, or JPG (max 2MB)</p>
-                              </>
-                           )}
+                        <div className="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl p-8 flex flex-col items-center justify-center text-center hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer group">
+                           <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-900/20 rounded-full flex items-center justify-center text-indigo-500 mb-3 group-hover:scale-110 transition-transform">
+                              <Upload className="w-5 h-5" />
+                           </div>
+                           <p className="text-sm font-medium text-gray-900 dark:text-white">Click to upload logo</p>
+                           <p className="text-xs text-gray-500 mt-1">SVG, PNG, or JPG (max 2MB)</p>
                         </div>
                      </div>
                      <div className="flex-1 w-full">
                         <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Primary Color</label>
-                        <div className="relative">
-                           <input
-                              type="color"
-                              value={settings.primaryColor || '#4F46E5'}
-                              onChange={handleColorChange}
-                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                           />
-                           <div className="flex items-center gap-4 p-4 border border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50/50 dark:bg-gray-900/50 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800/50 transition-colors">
-                              <div
-                                 className="w-12 h-12 rounded-full shadow-sm ring-4 ring-white dark:ring-gray-800"
-                                 style={{ backgroundColor: settings.primaryColor || '#4F46E5' }}
-                              ></div>
-                              <div>
-                                 <p className="font-mono text-sm font-medium text-gray-900 dark:text-white">{settings.primaryColor || '#4F46E5'}</p>
-                                 <p className="text-xs text-gray-500 mt-0.5">Used for buttons and highlights.</p>
-                              </div>
+                        <div className="flex items-center gap-4 p-4 border border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50/50 dark:bg-gray-900/50">
+                           <div className="w-12 h-12 rounded-full bg-indigo-600 shadow-sm ring-4 ring-white dark:ring-gray-800"></div>
+                           <div>
+                              <p className="font-mono text-sm font-medium text-gray-900 dark:text-white">#4F46E5</p>
+                              <p className="text-xs text-gray-500 mt-0.5">Used for buttons and highlights.</p>
                            </div>
                         </div>
                      </div>
@@ -1652,7 +1590,6 @@ export const ToursPage: React.FC<ToursPageProps> = ({ searchTerm = '', showToast
 
 // Helper Component for Tour Editing Form
 const TourEditForm = ({ tour, onSave }: { tour: typeof INITIAL_TOURS[0], onSave: (t: typeof INITIAL_TOURS[0]) => void }) => {
-   const { currency, formatCurrency } = useI18n();
    const [formData, setFormData] = useState(tour);
    const [newTag, setNewTag] = useState('');
 
@@ -1716,7 +1653,7 @@ const TourEditForm = ({ tour, onSave }: { tour: typeof INITIAL_TOURS[0], onSave:
                   <div className="flex items-center gap-2 text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">
                      <DollarSign className="w-3.5 h-3.5" /> Total Revenue
                   </div>
-                  <div className="text-2xl font-bold text-gray-900 dark:text-white">{formatCurrency(formData.revenue || 0)}</div>
+                  <div className="text-2xl font-bold text-gray-900 dark:text-white">${formData.revenue?.toLocaleString()}</div>
                </div>
             </div>
 
@@ -1727,8 +1664,8 @@ const TourEditForm = ({ tour, onSave }: { tour: typeof INITIAL_TOURS[0], onSave:
                </h3>
                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                     <label className="text-xs font-medium text-gray-500 dark:text-gray-400">Price ({currency.symbol})</label>
-                     <input
+                     <label className="text-xs font-medium text-gray-500 dark:text-gray-400">Price ($)</label>
+                     <input 
                         type="number"
                         value={formData.price}
                         onChange={e => setFormData({...formData, price: Number(e.target.value)})}
@@ -1847,7 +1784,7 @@ const TourEditForm = ({ tour, onSave }: { tour: typeof INITIAL_TOURS[0], onSave:
 
 // --- Reports Page ---
 export const ReportsPage = () => {
-   const { t, formatCurrency } = useI18n();
+   const { t } = useI18n();
    const [timeRange, setTimeRange] = useState<'7d' | '30d' | '12m'>('30d');
 
    // Mock Data for Charts
@@ -1944,7 +1881,7 @@ export const ReportsPage = () => {
                      +8.2%
                   </span>
                </div>
-               <div className="text-2xl font-bold text-gray-900 dark:text-white">{formatCurrency(42590)}</div>
+               <div className="text-2xl font-bold text-gray-900 dark:text-white">$42,590</div>
                <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">Total Revenue</div>
             </div>
 
@@ -2074,7 +2011,7 @@ export const ReportsPage = () => {
                         <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
                            <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">{tour.name}</td>
                            <td className="px-6 py-4 text-gray-600 dark:text-gray-300">{tour.bookings}</td>
-                           <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">{formatCurrency(tour.revenue)}</td>
+                           <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">${tour.revenue.toLocaleString()}</td>
                            <td className="px-6 py-4">
                               <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
                                  tour.trend.startsWith('+') 
