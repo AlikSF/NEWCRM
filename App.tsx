@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Search, Bell, Moon, Sun } from 'lucide-react';
 import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
-import Auth from './components/Auth';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 import {
   InboxPage,
@@ -13,11 +12,11 @@ import {
   ToursPage,
   ReportsPage
 } from './components/PlaceholderPages';
+import { UPCOMING_BOOKINGS } from './constants';
 import { Booking, Notification } from './types';
 import Toast from './components/Toast';
 import NotificationDropdown from './components/NotificationDropdown';
-import { supabase } from './lib/supabase';
-import { getBookings, getNotifications, markAllNotificationsAsRead as markAllRead } from './lib/api';
+import { initializeDatabase } from './lib/initializeDatabase';
 
 const Header = ({
   searchTerm,
@@ -95,59 +94,49 @@ const Header = ({
   );
 };
 
-function AppContent() {
-  const [session, setSession] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+const INITIAL_NOTIFICATIONS: Notification[] = [
+  {
+    id: '1',
+    message: 'New lead received – Sarah Jenkins',
+    timestamp: '5 min ago',
+    isRead: false
+  },
+  {
+    id: '2',
+    message: 'Booking confirmed – Sunset City Tour',
+    timestamp: '15 min ago',
+    isRead: false
+  },
+  {
+    id: '3',
+    message: 'Lead moved to Qualified – Marco Rossi',
+    timestamp: '1 hour ago',
+    isRead: false
+  }
+];
+
+function App() {
   const [activePage, setActivePage] = useState('dashboard');
-  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [bookings, setBookings] = useState<Booking[]>(UPCOMING_BOOKINGS);
   const [toast, setToast] = useState({ message: '', visible: false });
   const [searchTerm, setSearchTerm] = useState('');
   const [initialLeadForInbox, setInitialLeadForInbox] = useState<string | null>(null);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [notifications, setNotifications] = useState<Notification[]>(() => {
+    const stored = localStorage.getItem('tourcrm_notifications');
+    return stored ? JSON.parse(stored) : INITIAL_NOTIFICATIONS;
+  });
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setLoading(false);
-    });
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-    });
-
-    return () => subscription.unsubscribe();
+    initializeDatabase();
   }, []);
 
   useEffect(() => {
-    if (session) {
-      loadData();
-    }
-  }, [session]);
+    localStorage.setItem('tourcrm_notifications', JSON.stringify(notifications));
+  }, [notifications]);
 
-  const loadData = async () => {
-    try {
-      const [bookingsData, notificationsData] = await Promise.all([
-        getBookings(),
-        getNotifications(),
-      ]);
-      setBookings(bookingsData);
-      setNotifications(notificationsData);
-    } catch (error) {
-      console.error('Error loading data:', error);
-      showToast('Failed to load data. Using mock data.');
-    }
-  };
-
-  const handleMarkAllAsRead = async () => {
-    try {
-      await markAllRead();
-      setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
-    } catch (error) {
-      console.error('Error marking notifications as read:', error);
-    }
+  const markAllNotificationsAsRead = () => {
+    setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
   };
 
   const addBooking = (booking: Booking) => {
@@ -156,7 +145,7 @@ function AppContent() {
 
   const updateBooking = (updatedBooking: Booking) => {
     setBookings(prev => prev.map(b => b.id === updatedBooking.id ? updatedBooking : b));
-    showToast('Booking updated successfully');
+    showToast('Booking updated successfully (mock)');
   };
 
   const showToast = (message: string) => {
@@ -167,100 +156,75 @@ function AppContent() {
     setToast(prev => ({ ...prev, visible: false }));
   };
 
+  // Feature: Open Conversation
   const handleOpenConversation = (leadName: string) => {
     setInitialLeadForInbox(leadName);
     setActivePage('inbox');
   };
 
-  const handleAuthSuccess = () => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-    });
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!session) {
-    return <Auth onAuthSuccess={handleAuthSuccess} />;
-  }
-
-  return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex font-sans text-gray-900 dark:text-white transition-colors duration-200">
-      <Sidebar activePage={activePage} onNavigate={setActivePage} />
-
-      <main className="flex-1 md:ml-64 min-h-screen flex flex-col relative overflow-x-hidden">
-        <Header
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
-          notifications={notifications}
-          isNotificationOpen={isNotificationOpen}
-          setIsNotificationOpen={setIsNotificationOpen}
-          onMarkAllAsRead={handleMarkAllAsRead}
-        />
-
-        <div className="flex-1 overflow-hidden flex flex-col">
-          {activePage === 'dashboard' && (
-            <Dashboard bookings={bookings} searchTerm={searchTerm} onNavigate={setActivePage} />
-          )}
-          {activePage === 'inbox' && (
-            <InboxPage
-              onAddBooking={addBooking}
-              showToast={showToast}
-              searchTerm={searchTerm}
-              initialLeadName={initialLeadForInbox}
-            />
-          )}
-          {activePage === 'leads' && (
-            <LeadsPage
-              searchTerm={searchTerm}
-              onOpenConversation={handleOpenConversation}
-              showToast={showToast}
-            />
-          )}
-          {activePage === 'bookings' && (
-            <BookingsPage
-              bookings={bookings}
-              searchTerm={searchTerm}
-              onUpdateBooking={updateBooking}
-              onAddBooking={addBooking}
-              showToast={showToast}
-            />
-          )}
-          {activePage === 'team' && <TeamPage />}
-          {activePage === 'settings' && <SettingsPage showToast={showToast} />}
-          {activePage === 'tours' && <ToursPage searchTerm={searchTerm} showToast={showToast} />}
-          {activePage === 'reports' && <ReportsPage />}
-
-          {['support'].includes(activePage) && (
-            <div className="p-10 text-center">
-              <h2 className="text-xl text-gray-500 font-medium">This page is coming soon</h2>
-            </div>
-          )}
-        </div>
-      </main>
-
-      <Toast
-        message={toast.message}
-        isVisible={toast.visible}
-        onClose={hideToast}
-      />
-    </div>
-  );
-}
-
-function App() {
   return (
     <ThemeProvider>
-      <AppContent />
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex font-sans text-gray-900 dark:text-white transition-colors duration-200">
+        <Sidebar activePage={activePage} onNavigate={setActivePage} />
+
+        {/* Removed w-full to prevent overflow with ml-64. Added overflow-x-hidden as safety. */}
+        <main className="flex-1 md:ml-64 min-h-screen flex flex-col relative overflow-x-hidden">
+          <Header
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            notifications={notifications}
+            isNotificationOpen={isNotificationOpen}
+            setIsNotificationOpen={setIsNotificationOpen}
+            onMarkAllAsRead={markAllNotificationsAsRead}
+          />
+
+          <div className="flex-1 overflow-hidden flex flex-col">
+            {activePage === 'dashboard' && (
+              <Dashboard bookings={bookings} searchTerm={searchTerm} onNavigate={setActivePage} />
+            )}
+            {activePage === 'inbox' && (
+              <InboxPage 
+                onAddBooking={addBooking} 
+                showToast={showToast} 
+                searchTerm={searchTerm}
+                initialLeadName={initialLeadForInbox}
+              />
+            )}
+            {activePage === 'leads' && (
+              <LeadsPage
+                searchTerm={searchTerm}
+                onOpenConversation={handleOpenConversation}
+                showToast={showToast}
+              />
+            )}
+            {activePage === 'bookings' && (
+              <BookingsPage
+                bookings={bookings}
+                searchTerm={searchTerm}
+                onUpdateBooking={updateBooking}
+                onAddBooking={addBooking}
+                showToast={showToast}
+              />
+            )}
+            {activePage === 'team' && <TeamPage />}
+            {activePage === 'settings' && <SettingsPage showToast={showToast} />}
+            {activePage === 'tours' && <ToursPage searchTerm={searchTerm} showToast={showToast} />}
+            {activePage === 'reports' && <ReportsPage />}
+            
+            {['support'].includes(activePage) && (
+              <div className="p-10 text-center">
+                <h2 className="text-xl text-gray-500 font-medium">This page is coming soon</h2>
+              </div>
+            )}
+          </div>
+        </main>
+        
+        <Toast 
+          message={toast.message} 
+          isVisible={toast.visible} 
+          onClose={hideToast} 
+        />
+      </div>
     </ThemeProvider>
   );
 }

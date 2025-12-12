@@ -1,20 +1,49 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# TourCRM Dashboard
 
-# Run and deploy your AI Studio app
+A complete tour management CRM system with local database storage.
 
-This contains everything you need to run your app locally.
+## Features
 
-View your app in AI Studio: https://ai.studio/apps/drive/1iXNjZnjj7UBGIFSQpI9ZklQ3Zah8D3Mp
+- Lead management and tracking
+- Tour catalog management
+- Booking system
+- Inbox for client communications
+- Notifications
+- Team management
+- Reports and analytics
+- Dark mode support
+
+## Database
+
+This app uses **SQL.js** for local database storage. All data is stored in your browser's localStorage, so no external database service is required.
+
+The database is automatically initialized with sample data when you first run the app.
 
 ## Run Locally
 
-**Prerequisites:**  Node.js
-
+**Prerequisites:** Node.js
 
 1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+   ```bash
+   npm install
+   ```
+
+2. Run the app:
+   ```bash
+   npm run dev
+   ```
+
+3. Open your browser to the URL shown in the terminal (typically http://localhost:5173)
+
+## Database Structure
+
+The local database includes the following tables:
+- `organizations` - Tour company information
+- `leads` - Potential customers
+- `tours` - Tour catalog
+- `bookings` - Customer bookings
+- `inbox_threads` - Conversation threads
+- `inbox_messages` - Messages within threads
+- `notifications` - User notifications
+
+All data persists in your browser's localStorage.
