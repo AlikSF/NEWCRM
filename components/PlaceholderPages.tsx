@@ -1590,6 +1590,7 @@ export const ToursPage: React.FC<ToursPageProps> = ({ searchTerm = '', showToast
 
 // Helper Component for Tour Editing Form
 const TourEditForm = ({ tour, onSave }: { tour: typeof INITIAL_TOURS[0], onSave: (t: typeof INITIAL_TOURS[0]) => void }) => {
+   const { currency, formatCurrency } = useI18n();
    const [formData, setFormData] = useState(tour);
    const [newTag, setNewTag] = useState('');
 
@@ -1653,7 +1654,7 @@ const TourEditForm = ({ tour, onSave }: { tour: typeof INITIAL_TOURS[0], onSave:
                   <div className="flex items-center gap-2 text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">
                      <DollarSign className="w-3.5 h-3.5" /> Total Revenue
                   </div>
-                  <div className="text-2xl font-bold text-gray-900 dark:text-white">${formData.revenue?.toLocaleString()}</div>
+                  <div className="text-2xl font-bold text-gray-900 dark:text-white">{formatCurrency(formData.revenue || 0)}</div>
                </div>
             </div>
 
@@ -1664,8 +1665,8 @@ const TourEditForm = ({ tour, onSave }: { tour: typeof INITIAL_TOURS[0], onSave:
                </h3>
                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                     <label className="text-xs font-medium text-gray-500 dark:text-gray-400">Price ($)</label>
-                     <input 
+                     <label className="text-xs font-medium text-gray-500 dark:text-gray-400">Price ({currency.symbol})</label>
+                     <input
                         type="number"
                         value={formData.price}
                         onChange={e => setFormData({...formData, price: Number(e.target.value)})}
@@ -1784,7 +1785,7 @@ const TourEditForm = ({ tour, onSave }: { tour: typeof INITIAL_TOURS[0], onSave:
 
 // --- Reports Page ---
 export const ReportsPage = () => {
-   const { t } = useI18n();
+   const { t, formatCurrency } = useI18n();
    const [timeRange, setTimeRange] = useState<'7d' | '30d' | '12m'>('30d');
 
    // Mock Data for Charts
@@ -1881,7 +1882,7 @@ export const ReportsPage = () => {
                      +8.2%
                   </span>
                </div>
-               <div className="text-2xl font-bold text-gray-900 dark:text-white">$42,590</div>
+               <div className="text-2xl font-bold text-gray-900 dark:text-white">{formatCurrency(42590)}</div>
                <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">Total Revenue</div>
             </div>
 
@@ -2011,7 +2012,7 @@ export const ReportsPage = () => {
                         <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
                            <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">{tour.name}</td>
                            <td className="px-6 py-4 text-gray-600 dark:text-gray-300">{tour.bookings}</td>
-                           <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">${tour.revenue.toLocaleString()}</td>
+                           <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">{formatCurrency(tour.revenue)}</td>
                            <td className="px-6 py-4">
                               <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
                                  tour.trend.startsWith('+') 
