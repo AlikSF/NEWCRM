@@ -1282,18 +1282,28 @@ export const ToursPage: React.FC<ToursPageProps> = ({ searchTerm = '', showToast
       setSelectedTour(null);
    };
 
-   const handleCreateTour = (tourData: { name: string; location: string; duration: string; price: number; active: boolean }) => {
+   const handleCreateTour = (tourData: {
+      name: string;
+      location: string;
+      duration: string;
+      price: number;
+      active: boolean;
+      difficulty: string;
+      maxPeople: number;
+      tags: string[];
+      description: string;
+   }) => {
       const newTour = {
          id: tours.length > 0 ? Math.max(...tours.map(t => t.id)) + 1 : 1,
          name: tourData.name,
          price: tourData.price,
          duration: tourData.duration,
          active: tourData.active,
-         description: '',
+         description: tourData.description,
          image: 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&q=80&w=200',
-         tags: [],
-         maxPeople: 0,
-         difficulty: 'Easy',
+         tags: tourData.tags,
+         maxPeople: tourData.maxPeople,
+         difficulty: tourData.difficulty,
          location: tourData.location,
          bookingsCount: 0,
          revenue: 0
