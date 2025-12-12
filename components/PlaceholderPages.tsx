@@ -1046,15 +1046,31 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ showToast }) => {
                         <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Default Timezone</label>
                         <div className="relative">
                            <Globe className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
-                           <select 
+                           <select
                               value={settings.timezone}
                               onChange={(e) => setSettings({...settings, timezone: e.target.value})}
                               className="w-full pl-9 pr-3 py-2.5 bg-gray-50 dark:bg-gray-900/50 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none appearance-none"
                            >
-                              <option>UTC-8 (PST)</option>
-                              <option>UTC-5 (EST)</option>
-                              <option>UTC+0 (GMT)</option>
-                              <option>UTC+1 (CET)</option>
+                              <option>UTC-10 (HST - Hawaii)</option>
+                              <option>UTC-8 (PST - Los Angeles, Vancouver)</option>
+                              <option>UTC-7 (MST - Denver, Phoenix)</option>
+                              <option>UTC-6 (CST - Chicago, Mexico City)</option>
+                              <option>UTC-5 (EST - New York, Toronto)</option>
+                              <option>UTC-4 (AST - Caracas, Santiago)</option>
+                              <option>UTC-3 (BRT - Buenos Aires, São Paulo)</option>
+                              <option>UTC+0 (GMT - London, Lisbon)</option>
+                              <option>UTC+1 (CET - Paris, Rome, Madrid)</option>
+                              <option>UTC+2 (EET - Athens, Cairo, Istanbul)</option>
+                              <option>UTC+3 (MSK - Moscow, Dubai)</option>
+                              <option>UTC+4 (GST - Abu Dhabi, Baku)</option>
+                              <option>UTC+5 (PKT - Karachi, Tashkent)</option>
+                              <option>UTC+5:30 (IST - Mumbai, Delhi)</option>
+                              <option>UTC+6 (BST - Dhaka, Almaty)</option>
+                              <option>UTC+7 (ICT - Bangkok, Jakarta, Hanoi)</option>
+                              <option>UTC+8 (SGT - Singapore, Hong Kong, Beijing)</option>
+                              <option>UTC+9 (JST - Tokyo, Seoul)</option>
+                              <option>UTC+10 (AEST - Sydney, Melbourne)</option>
+                              <option>UTC+12 (NZST - Auckland, Fiji)</option>
                            </select>
                         </div>
                      </div>
@@ -1062,14 +1078,41 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ showToast }) => {
                         <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Default Currency</label>
                         <div className="relative">
                            <DollarSign className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
-                           <select 
+                           <select
                               value={settings.currency}
                               onChange={(e) => setSettings({...settings, currency: e.target.value})}
                               className="w-full pl-9 pr-3 py-2.5 bg-gray-50 dark:bg-gray-900/50 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none appearance-none"
                            >
-                              <option>USD ($)</option>
-                              <option>EUR (€)</option>
-                              <option>GBP (£)</option>
+                              <option>USD ($) - United States Dollar</option>
+                              <option>EUR (€) - Euro</option>
+                              <option>GBP (£) - British Pound</option>
+                              <option>JPY (¥) - Japanese Yen</option>
+                              <option>CNY (¥) - Chinese Yuan</option>
+                              <option>AUD ($) - Australian Dollar</option>
+                              <option>CAD ($) - Canadian Dollar</option>
+                              <option>CHF (Fr) - Swiss Franc</option>
+                              <option>SGD ($) - Singapore Dollar</option>
+                              <option>HKD ($) - Hong Kong Dollar</option>
+                              <option>NZD ($) - New Zealand Dollar</option>
+                              <option>THB (฿) - Thai Baht</option>
+                              <option>AED (د.إ) - UAE Dirham</option>
+                              <option>INR (₹) - Indian Rupee</option>
+                              <option>MYR (RM) - Malaysian Ringgit</option>
+                              <option>IDR (Rp) - Indonesian Rupiah</option>
+                              <option>PHP (₱) - Philippine Peso</option>
+                              <option>VND (₫) - Vietnamese Dong</option>
+                              <option>KRW (₩) - South Korean Won</option>
+                              <option>TWD (NT$) - Taiwan Dollar</option>
+                              <option>TRY (₺) - Turkish Lira</option>
+                              <option>ZAR (R) - South African Rand</option>
+                              <option>MXN ($) - Mexican Peso</option>
+                              <option>BRL (R$) - Brazilian Real</option>
+                              <option>ARS ($) - Argentine Peso</option>
+                              <option>COP ($) - Colombian Peso</option>
+                              <option>CLP ($) - Chilean Peso</option>
+                              <option>EGP (£) - Egyptian Pound</option>
+                              <option>MAD (د.م.) - Moroccan Dirham</option>
+                              <option>RUB (₽) - Russian Ruble</option>
                            </select>
                         </div>
                      </div>
