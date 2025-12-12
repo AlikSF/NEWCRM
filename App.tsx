@@ -118,9 +118,10 @@ function App() {
               />
             )}
             {activePage === 'leads' && (
-              <LeadsPage 
-                searchTerm={searchTerm} 
+              <LeadsPage
+                searchTerm={searchTerm}
                 onOpenConversation={handleOpenConversation}
+                showToast={showToast}
               />
             )}
             {activePage === 'bookings' && (

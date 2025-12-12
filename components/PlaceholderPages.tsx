@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import AddLeadModal from './AddLeadModal';
 import { 
   Mail, 
   User, 
@@ -362,14 +363,16 @@ export const InboxPage: React.FC<InboxPageProps> = ({
 interface LeadsPageProps {
   searchTerm?: string;
   onOpenConversation?: (leadName: string) => void;
+  showToast?: (message: string) => void;
 }
 
-export const LeadsPage: React.FC<LeadsPageProps> = ({ searchTerm = '', onOpenConversation }) => {
+export const LeadsPage: React.FC<LeadsPageProps> = ({ searchTerm = '', onOpenConversation, showToast }) => {
   const { t } = useI18n();
   const [leads, setLeads] = useState<Lead[]>(RECENT_LEADS);
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'table' | 'kanban'>('table');
   const [draggedLeadId, setDraggedLeadId] = useState<string | null>(null);
+  const [isAddLeadModalOpen, setIsAddLeadModalOpen] = useState(false);
   
   const KANBAN_COLUMNS: { id: LeadStatus; label: string; color: string }[] = [
     { id: 'New', label: t('leads_status_new'), color: 'bg-blue-500' },
@@ -389,7 +392,17 @@ export const LeadsPage: React.FC<LeadsPageProps> = ({ searchTerm = '', onOpenCon
     setLeads(prev => prev.map(l => l.id === updatedLead.id ? updatedLead : l));
     setSelectedLeadId(null);
   };
-  
+
+  const handleAddLead = (leadData: Omit<Lead, 'id' | 'lastMessageTime'>) => {
+    const newLead: Lead = {
+      ...leadData,
+      id: `L${String(leads.length + 1).padStart(3, '0')}`,
+      lastMessageTime: 'Just now'
+    };
+    setLeads(prev => [newLead, ...prev]);
+    showToast?.('Lead created successfully');
+  };
+
   // Drag and Drop Handlers
   const handleDragStart = (e: React.DragEvent, leadId: string) => {
     setDraggedLeadId(leadId);
@@ -464,7 +477,10 @@ export const LeadsPage: React.FC<LeadsPageProps> = ({ searchTerm = '', onOpenCon
               </button>
             </div>
 
-            <button className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors shadow-sm whitespace-nowrap">
+            <button
+              onClick={() => setIsAddLeadModalOpen(true)}
+              className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors shadow-sm whitespace-nowrap"
+            >
               Add Lead
             </button>
           </div>
@@ -587,6 +603,12 @@ export const LeadsPage: React.FC<LeadsPageProps> = ({ searchTerm = '', onOpenCon
           </div>
         )}
       </div>
+
+      <AddLeadModal
+        isOpen={isAddLeadModalOpen}
+        onClose={() => setIsAddLeadModalOpen(false)}
+        onAddLead={handleAddLead}
+      />
     </div>
   );
 };
