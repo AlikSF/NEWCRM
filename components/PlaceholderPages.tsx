@@ -618,7 +618,7 @@ export const LeadsPage: React.FC<LeadsPageProps> = ({ searchTerm = '', onOpenCon
 };
 
 // Helper Component for Lead Details
-const LeadDetailPane = ({ lead, onClose, onSave, onOpenChat }: { lead: Lead, onClose: () => void, onSave: (l: Lead) => void, onOpenChat: () => void }) => {
+export const LeadDetailPane = ({ lead, onClose, onSave, onOpenChat }: { lead: Lead, onClose: () => void, onSave: (l: Lead) => void, onOpenChat: () => void }) => {
    // Extended mock state for the edit form since Lead type is limited
    const [formData, setFormData] = useState({
       ...lead,
@@ -968,7 +968,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ showToast }) => {
                orgName: 'Wanderlust Tours',
                contactEmail: 'alex@wanderlust.com',
                timezone: 'UTC-5 (EST)',
-               currency: 'USD ($)',
+               currency: 'USD ($) - United States Dollar',
                emailLeads: true,
                emailBookings: true,
                whatsappAlerts: false
@@ -979,18 +979,58 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ showToast }) => {
          orgName: 'Wanderlust Tours',
          contactEmail: 'alex@wanderlust.com',
          timezone: 'UTC-5 (EST)',
-         currency: 'USD ($)',
+         currency: 'USD ($) - United States Dollar',
          emailLeads: true,
          emailBookings: true,
          whatsappAlerts: false
       };
    });
    const [isLoading, setIsLoading] = useState(false);
-   const { language, setLanguage, t } = useI18n();
+   const { language, setLanguage, t, setCurrency } = useI18n();
 
    const handleSave = () => {
       setIsLoading(true);
       localStorage.setItem('tourcrm_settings', JSON.stringify(settings));
+
+      // Update currency in context
+      const currencyMap = {
+         'USD ($) - United States Dollar': { code: 'USD', symbol: '$', name: 'United States Dollar' },
+         'EUR (€) - Euro': { code: 'EUR', symbol: '€', name: 'Euro' },
+         'GBP (£) - British Pound': { code: 'GBP', symbol: '£', name: 'British Pound' },
+         'JPY (¥) - Japanese Yen': { code: 'JPY', symbol: '¥', name: 'Japanese Yen' },
+         'CNY (¥) - Chinese Yuan': { code: 'CNY', symbol: '¥', name: 'Chinese Yuan' },
+         'AUD ($) - Australian Dollar': { code: 'AUD', symbol: '$', name: 'Australian Dollar' },
+         'CAD ($) - Canadian Dollar': { code: 'CAD', symbol: '$', name: 'Canadian Dollar' },
+         'CHF (Fr) - Swiss Franc': { code: 'CHF', symbol: 'Fr', name: 'Swiss Franc' },
+         'SGD ($) - Singapore Dollar': { code: 'SGD', symbol: '$', name: 'Singapore Dollar' },
+         'HKD ($) - Hong Kong Dollar': { code: 'HKD', symbol: '$', name: 'Hong Kong Dollar' },
+         'NZD ($) - New Zealand Dollar': { code: 'NZD', symbol: '$', name: 'New Zealand Dollar' },
+         'THB (฿) - Thai Baht': { code: 'THB', symbol: '฿', name: 'Thai Baht' },
+         'AED (د.إ) - UAE Dirham': { code: 'AED', symbol: 'د.إ', name: 'UAE Dirham' },
+         'INR (₹) - Indian Rupee': { code: 'INR', symbol: '₹', name: 'Indian Rupee' },
+         'MYR (RM) - Malaysian Ringgit': { code: 'MYR', symbol: 'RM', name: 'Malaysian Ringgit' },
+         'IDR (Rp) - Indonesian Rupiah': { code: 'IDR', symbol: 'Rp', name: 'Indonesian Rupiah' },
+         'PHP (₱) - Philippine Peso': { code: 'PHP', symbol: '₱', name: 'Philippine Peso' },
+         'VND (₫) - Vietnamese Dong': { code: 'VND', symbol: '₫', name: 'Vietnamese Dong' },
+         'KRW (₩) - South Korean Won': { code: 'KRW', symbol: '₩', name: 'South Korean Won' },
+         'TWD (NT$) - Taiwan Dollar': { code: 'TWD', symbol: 'NT$', name: 'Taiwan Dollar' },
+         'TRY (₺) - Turkish Lira': { code: 'TRY', symbol: '₺', name: 'Turkish Lira' },
+         'ZAR (R) - South African Rand': { code: 'ZAR', symbol: 'R', name: 'South African Rand' },
+         'MXN ($) - Mexican Peso': { code: 'MXN', symbol: '$', name: 'Mexican Peso' },
+         'BRL (R$) - Brazilian Real': { code: 'BRL', symbol: 'R$', name: 'Brazilian Real' },
+         'ARS ($) - Argentine Peso': { code: 'ARS', symbol: '$', name: 'Argentine Peso' },
+         'COP ($) - Colombian Peso': { code: 'COP', symbol: '$', name: 'Colombian Peso' },
+         'CLP ($) - Chilean Peso': { code: 'CLP', symbol: '$', name: 'Chilean Peso' },
+         'EGP (£) - Egyptian Pound': { code: 'EGP', symbol: '£', name: 'Egyptian Pound' },
+         'MAD (د.م.) - Moroccan Dirham': { code: 'MAD', symbol: 'د.م.', name: 'Moroccan Dirham' },
+         'RUB (₽) - Russian Ruble': { code: 'RUB', symbol: '₽', name: 'Russian Ruble' },
+      };
+
+      const selectedCurrency = currencyMap[settings.currency as keyof typeof currencyMap];
+      if (selectedCurrency) {
+         setCurrency(selectedCurrency);
+      }
+
       setTimeout(() => {
          setIsLoading(false);
          showToast?.('Settings saved successfully');
@@ -1046,15 +1086,31 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ showToast }) => {
                         <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Default Timezone</label>
                         <div className="relative">
                            <Globe className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
-                           <select 
+                           <select
                               value={settings.timezone}
                               onChange={(e) => setSettings({...settings, timezone: e.target.value})}
                               className="w-full pl-9 pr-3 py-2.5 bg-gray-50 dark:bg-gray-900/50 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none appearance-none"
                            >
-                              <option>UTC-8 (PST)</option>
-                              <option>UTC-5 (EST)</option>
-                              <option>UTC+0 (GMT)</option>
-                              <option>UTC+1 (CET)</option>
+                              <option>UTC-10 (HST - Hawaii)</option>
+                              <option>UTC-8 (PST - Los Angeles, Vancouver)</option>
+                              <option>UTC-7 (MST - Denver, Phoenix)</option>
+                              <option>UTC-6 (CST - Chicago, Mexico City)</option>
+                              <option>UTC-5 (EST - New York, Toronto)</option>
+                              <option>UTC-4 (AST - Caracas, Santiago)</option>
+                              <option>UTC-3 (BRT - Buenos Aires, São Paulo)</option>
+                              <option>UTC+0 (GMT - London, Lisbon)</option>
+                              <option>UTC+1 (CET - Paris, Rome, Madrid)</option>
+                              <option>UTC+2 (EET - Athens, Cairo, Istanbul)</option>
+                              <option>UTC+3 (MSK - Moscow, Dubai)</option>
+                              <option>UTC+4 (GST - Abu Dhabi, Baku)</option>
+                              <option>UTC+5 (PKT - Karachi, Tashkent)</option>
+                              <option>UTC+5:30 (IST - Mumbai, Delhi)</option>
+                              <option>UTC+6 (BST - Dhaka, Almaty)</option>
+                              <option>UTC+7 (ICT - Bangkok, Jakarta, Hanoi)</option>
+                              <option>UTC+8 (SGT - Singapore, Hong Kong, Beijing)</option>
+                              <option>UTC+9 (JST - Tokyo, Seoul)</option>
+                              <option>UTC+10 (AEST - Sydney, Melbourne)</option>
+                              <option>UTC+12 (NZST - Auckland, Fiji)</option>
                            </select>
                         </div>
                      </div>
@@ -1062,14 +1118,41 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ showToast }) => {
                         <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Default Currency</label>
                         <div className="relative">
                            <DollarSign className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
-                           <select 
+                           <select
                               value={settings.currency}
                               onChange={(e) => setSettings({...settings, currency: e.target.value})}
                               className="w-full pl-9 pr-3 py-2.5 bg-gray-50 dark:bg-gray-900/50 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none appearance-none"
                            >
-                              <option>USD ($)</option>
-                              <option>EUR (€)</option>
-                              <option>GBP (£)</option>
+                              <option>USD ($) - United States Dollar</option>
+                              <option>EUR (€) - Euro</option>
+                              <option>GBP (£) - British Pound</option>
+                              <option>JPY (¥) - Japanese Yen</option>
+                              <option>CNY (¥) - Chinese Yuan</option>
+                              <option>AUD ($) - Australian Dollar</option>
+                              <option>CAD ($) - Canadian Dollar</option>
+                              <option>CHF (Fr) - Swiss Franc</option>
+                              <option>SGD ($) - Singapore Dollar</option>
+                              <option>HKD ($) - Hong Kong Dollar</option>
+                              <option>NZD ($) - New Zealand Dollar</option>
+                              <option>THB (฿) - Thai Baht</option>
+                              <option>AED (د.إ) - UAE Dirham</option>
+                              <option>INR (₹) - Indian Rupee</option>
+                              <option>MYR (RM) - Malaysian Ringgit</option>
+                              <option>IDR (Rp) - Indonesian Rupiah</option>
+                              <option>PHP (₱) - Philippine Peso</option>
+                              <option>VND (₫) - Vietnamese Dong</option>
+                              <option>KRW (₩) - South Korean Won</option>
+                              <option>TWD (NT$) - Taiwan Dollar</option>
+                              <option>TRY (₺) - Turkish Lira</option>
+                              <option>ZAR (R) - South African Rand</option>
+                              <option>MXN ($) - Mexican Peso</option>
+                              <option>BRL (R$) - Brazilian Real</option>
+                              <option>ARS ($) - Argentine Peso</option>
+                              <option>COP ($) - Colombian Peso</option>
+                              <option>CLP ($) - Chilean Peso</option>
+                              <option>EGP (£) - Egyptian Pound</option>
+                              <option>MAD (د.م.) - Moroccan Dirham</option>
+                              <option>RUB (₽) - Russian Ruble</option>
                            </select>
                         </div>
                      </div>
@@ -1305,7 +1388,7 @@ const INITIAL_TOURS = [
 ];
 
 export const ToursPage: React.FC<ToursPageProps> = ({ searchTerm = '', showToast }) => {
-   const { t } = useI18n();
+   const { t, formatCurrency } = useI18n();
    const [tours, setTours] = useState(INITIAL_TOURS);
    const [selectedTour, setSelectedTour] = useState<typeof INITIAL_TOURS[0] | null>(null);
    const [activeActionMenuId, setActiveActionMenuId] = useState<number | null>(null);
@@ -1443,7 +1526,7 @@ export const ToursPage: React.FC<ToursPageProps> = ({ searchTerm = '', showToast
                               {tour.duration}
                            </td>
                            <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">
-                              ${tour.price}
+                              {formatCurrency(tour.price)}
                            </td>
                            <td className="px-6 py-4">
                               <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${

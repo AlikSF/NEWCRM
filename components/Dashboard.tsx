@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import { 
-  Users, 
-  MessageSquare, 
-  PhoneOutgoing, 
-  Map as MapIcon, 
+import React, { useState, useRef, useEffect } from 'react';
+import {
+  Users,
+  MessageSquare,
+  PhoneOutgoing,
+  Map as MapIcon,
   ArrowRight,
   Plus,
   MoreVertical,
@@ -11,8 +11,10 @@ import {
   Calendar
 } from 'lucide-react';
 import { KPI_DATA, RECENT_LEADS, UPCOMING_BOOKINGS } from '../constants';
-import { Booking, BookingStatus, LeadStatus } from '../types';
+import { Booking, BookingStatus, LeadStatus, Lead } from '../types';
 import AddLeadModal from './AddLeadModal';
+import CreateBookingModal from './CreateBookingModal';
+import { LeadDetailPane } from './PlaceholderPages';
 
 // --- Sub-components for Cleaner Code ---
 
@@ -109,6 +111,62 @@ interface DashboardProps {
 
 const Dashboard: React.FC<DashboardProps> = ({ bookings = UPCOMING_BOOKINGS, searchTerm = '', onNavigate }) => {
   const [isLeadModalOpen, setIsLeadModalOpen] = useState(false);
+  const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
+  const [editingBooking, setEditingBooking] = useState<Booking | null>(null);
+  const [leadFilterTab, setLeadFilterTab] = useState<'all' | 'new' | 'priority'>('all');
+  const [bookingFilterOpen, setBookingFilterOpen] = useState(false);
+  const [bookingMoreOpen, setBookingMoreOpen] = useState(false);
+  const [bookingTimeFilter, setBookingTimeFilter] = useState<'7days' | '30days' | 'all'>('7days');
+
+  const bookingFilterRef = useRef<HTMLDivElement>(null);
+  const bookingMoreRef = useRef<HTMLDivElement>(null);
+
+  const activeLead = RECENT_LEADS.find(l => l.id === selectedLeadId);
+
+  const filteredLeads = RECENT_LEADS.filter(lead => {
+    if (leadFilterTab === 'new') return lead.status === 'New';
+    if (leadFilterTab === 'priority') return lead.status === 'Qualified';
+    return true;
+  });
+
+  const handleUpdateLead = (updatedLead: Lead) => {
+    setSelectedLeadId(null);
+  };
+
+  const handleOpenChat = (leadName: string) => {
+    setSelectedLeadId(null);
+    onNavigate?.('inbox');
+  };
+
+  const handleBookingUpdated = (booking: Booking) => {
+    setEditingBooking(null);
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (bookingFilterRef.current && !bookingFilterRef.current.contains(event.target as Node)) {
+        setBookingFilterOpen(false);
+      }
+      if (bookingMoreRef.current && !bookingMoreRef.current.contains(event.target as Node)) {
+        setBookingMoreOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleKpiClick = (label: string) => {
+    if (label.includes('leads') && onNavigate) {
+      onNavigate('leads');
+    } else if (label.includes('conversations') && onNavigate) {
+      onNavigate('inbox');
+    } else if (label.includes('Follow-ups') && onNavigate) {
+      onNavigate('leads');
+    } else if (label.includes('tours') && onNavigate) {
+      onNavigate('bookings');
+    }
+  };
 
   return (
     <div className="min-h-screen pb-10">
@@ -145,7 +203,11 @@ const Dashboard: React.FC<DashboardProps> = ({ bookings = UPCOMING_BOOKINGS, sea
           {KPI_DATA.map((kpi, idx) => {
             const Icon = getKpiIcon(kpi.label);
             return (
-              <div key={kpi.id} className="relative group bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-100 dark:border-gray-700/50 shadow-sm hover:shadow-md hover:border-indigo-100 dark:hover:border-indigo-900/50 transition-all duration-300">
+              <div
+                key={kpi.id}
+                onClick={() => handleKpiClick(kpi.label)}
+                className="relative group bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-100 dark:border-gray-700/50 shadow-sm hover:shadow-md hover:border-indigo-100 dark:hover:border-indigo-900/50 transition-all duration-300 cursor-pointer active:scale-95"
+              >
                 <div className="flex justify-between items-start mb-4">
                   <div className={`p-2.5 rounded-lg ${
                     idx === 0 ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400' :
@@ -157,8 +219,8 @@ const Dashboard: React.FC<DashboardProps> = ({ bookings = UPCOMING_BOOKINGS, sea
                   </div>
                   {kpi.trend && (
                     <div className={`flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full ${
-                      kpi.trendUp 
-                        ? 'bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400' 
+                      kpi.trendUp
+                        ? 'bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400'
                         : 'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400'
                     }`}>
                       {kpi.trendUp ? '↑' : '↓'} {kpi.trend}
@@ -188,9 +250,36 @@ const Dashboard: React.FC<DashboardProps> = ({ bookings = UPCOMING_BOOKINGS, sea
               
               {/* Tabs */}
               <div className="flex items-center p-1 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                <button className="px-3 py-1 text-xs font-medium bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm rounded-md transition-all">All</button>
-                <button className="px-3 py-1 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-all">New</button>
-                <button className="px-3 py-1 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-all">Priority</button>
+                <button
+                  onClick={() => setLeadFilterTab('all')}
+                  className={`px-3 py-1 text-xs font-medium transition-all rounded-md ${
+                    leadFilterTab === 'all'
+                      ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm'
+                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                  }`}
+                >
+                  All
+                </button>
+                <button
+                  onClick={() => setLeadFilterTab('new')}
+                  className={`px-3 py-1 text-xs font-medium transition-all rounded-md ${
+                    leadFilterTab === 'new'
+                      ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm'
+                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                  }`}
+                >
+                  New
+                </button>
+                <button
+                  onClick={() => setLeadFilterTab('priority')}
+                  className={`px-3 py-1 text-xs font-medium transition-all rounded-md ${
+                    leadFilterTab === 'priority'
+                      ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm'
+                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                  }`}
+                >
+                  Priority
+                </button>
               </div>
             </div>
 
@@ -206,8 +295,12 @@ const Dashboard: React.FC<DashboardProps> = ({ bookings = UPCOMING_BOOKINGS, sea
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50 dark:divide-gray-700/50">
-                  {RECENT_LEADS.map((lead) => (
-                    <tr key={lead.id} className="group hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors cursor-pointer">
+                  {filteredLeads.map((lead) => (
+                    <tr
+                      key={lead.id}
+                      onClick={() => setSelectedLeadId(lead.id)}
+                      className="group hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors cursor-pointer"
+                    >
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           <Avatar name={lead.name} />
@@ -237,7 +330,10 @@ const Dashboard: React.FC<DashboardProps> = ({ bookings = UPCOMING_BOOKINGS, sea
               </table>
             </div>
             <div className="p-4 border-t border-gray-100 dark:border-gray-700">
-              <button className="w-full py-2 flex items-center justify-center gap-2 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded-lg transition-colors border border-dashed border-gray-200 dark:border-gray-700">
+              <button
+                onClick={() => onNavigate?.('leads')}
+                className="w-full py-2 flex items-center justify-center gap-2 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded-lg transition-colors border border-dashed border-gray-200 dark:border-gray-700"
+              >
                  View all leads
               </button>
             </div>
@@ -251,12 +347,78 @@ const Dashboard: React.FC<DashboardProps> = ({ bookings = UPCOMING_BOOKINGS, sea
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Next 7 days schedule</p>
               </div>
               <div className="flex gap-2">
-                 <button className="p-2 text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
-                   <Filter className="w-4 h-4" />
-                 </button>
-                 <button className="p-2 text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
-                   <MoreVertical className="w-4 h-4" />
-                 </button>
+                 <div className="relative" ref={bookingFilterRef}>
+                   <button
+                     onClick={() => setBookingFilterOpen(!bookingFilterOpen)}
+                     className="p-2 text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                   >
+                     <Filter className="w-4 h-4" />
+                   </button>
+                   {bookingFilterOpen && (
+                     <div className="absolute right-0 top-10 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50 py-1">
+                       <button
+                         onClick={() => {
+                           setBookingTimeFilter('7days');
+                           setBookingFilterOpen(false);
+                         }}
+                         className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${
+                           bookingTimeFilter === '7days' ? 'text-indigo-600 dark:text-indigo-400 font-medium' : 'text-gray-700 dark:text-gray-300'
+                         }`}
+                       >
+                         Next 7 days
+                       </button>
+                       <button
+                         onClick={() => {
+                           setBookingTimeFilter('30days');
+                           setBookingFilterOpen(false);
+                         }}
+                         className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${
+                           bookingTimeFilter === '30days' ? 'text-indigo-600 dark:text-indigo-400 font-medium' : 'text-gray-700 dark:text-gray-300'
+                         }`}
+                       >
+                         Next 30 days
+                       </button>
+                       <button
+                         onClick={() => {
+                           setBookingTimeFilter('all');
+                           setBookingFilterOpen(false);
+                         }}
+                         className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${
+                           bookingTimeFilter === 'all' ? 'text-indigo-600 dark:text-indigo-400 font-medium' : 'text-gray-700 dark:text-gray-300'
+                         }`}
+                       >
+                         All
+                       </button>
+                     </div>
+                   )}
+                 </div>
+                 <div className="relative" ref={bookingMoreRef}>
+                   <button
+                     onClick={() => setBookingMoreOpen(!bookingMoreOpen)}
+                     className="p-2 text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                   >
+                     <MoreVertical className="w-4 h-4" />
+                   </button>
+                   {bookingMoreOpen && (
+                     <div className="absolute right-0 top-10 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50 py-1">
+                       <button
+                         onClick={() => {
+                           onNavigate?.('bookings');
+                           setBookingMoreOpen(false);
+                         }}
+                         className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                       >
+                         View all bookings
+                       </button>
+                       <button
+                         disabled
+                         className="w-full px-4 py-2 text-left text-sm text-gray-400 dark:text-gray-600 cursor-not-allowed"
+                       >
+                         Export
+                       </button>
+                     </div>
+                   )}
+                 </div>
               </div>
             </div>
             
@@ -272,7 +434,11 @@ const Dashboard: React.FC<DashboardProps> = ({ bookings = UPCOMING_BOOKINGS, sea
                 </thead>
                 <tbody className="divide-y divide-gray-50 dark:divide-gray-700/50">
                   {bookings.map((booking) => (
-                    <tr key={booking.id} className="group hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors cursor-pointer">
+                    <tr
+                      key={booking.id}
+                      onClick={() => setEditingBooking(booking)}
+                      className="group hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors cursor-pointer"
+                    >
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-400 shrink-0">
@@ -308,8 +474,36 @@ const Dashboard: React.FC<DashboardProps> = ({ bookings = UPCOMING_BOOKINGS, sea
           </div>
         </div>
 
-        {/* Modals */}
+        {/* Modals & Drawers */}
         <AddLeadModal isOpen={isLeadModalOpen} onClose={() => setIsLeadModalOpen(false)} />
+
+        {/* Lead Details Drawer */}
+        {selectedLeadId && activeLead && (
+          <>
+            <div
+              className="fixed inset-0 z-[60] bg-gray-900/40 backdrop-blur-sm transition-opacity duration-300"
+              onClick={() => setSelectedLeadId(null)}
+            />
+            <div className="fixed inset-y-0 right-0 z-[70] w-full max-w-md bg-white dark:bg-gray-800 shadow-2xl transform transition-transform duration-300 ease-in-out border-l border-gray-200 dark:border-gray-700">
+              <LeadDetailPane
+                lead={activeLead}
+                onClose={() => setSelectedLeadId(null)}
+                onSave={handleUpdateLead}
+                onOpenChat={() => handleOpenChat(activeLead.name)}
+              />
+            </div>
+          </>
+        )}
+
+        {/* Booking Edit Modal */}
+        {editingBooking && (
+          <CreateBookingModal
+            isOpen={true}
+            onClose={() => setEditingBooking(null)}
+            bookingToEdit={editingBooking}
+            onBookingUpdated={handleBookingUpdated}
+          />
+        )}
       </div>
     </div>
   );

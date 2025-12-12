@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X, MapPin, List, Tag, AlignLeft, Plus } from 'lucide-react';
+import { useTheme } from '../context/ThemeContext';
 
 interface CreateTourModalProps {
   isOpen: boolean;
@@ -18,6 +19,7 @@ interface CreateTourModalProps {
 }
 
 const CreateTourModal: React.FC<CreateTourModalProps> = ({ isOpen, onClose, onCreateTour }) => {
+  const { currency } = useTheme();
   const [formData, setFormData] = useState({
     name: '',
     location: '',
@@ -135,7 +137,7 @@ const CreateTourModal: React.FC<CreateTourModalProps> = ({ isOpen, onClose, onCr
               </h3>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-gray-500 dark:text-gray-400">Price ($)</label>
+                  <label className="text-xs font-medium text-gray-500 dark:text-gray-400">Price ({currency.symbol})</label>
                   <input
                     type="number"
                     min="0"

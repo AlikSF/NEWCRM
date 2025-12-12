@@ -1,4 +1,4 @@
-import { Booking, KPIMetric, Lead } from './types';
+import { Booking, KPIMetric, Lead, Tour } from './types';
 
 // Mock KPI Data
 export const KPI_DATA: KPIMetric[] = [
@@ -66,6 +66,58 @@ export const RECENT_LEADS: Lead[] = [
     lastMessageTime: '1 day ago',
     status: 'Contacted',
     channel: 'Website',
+  },
+];
+
+// Mock Tours Data
+export const AVAILABLE_TOURS: Tour[] = [
+  {
+    id: 'T001',
+    name: 'Sunset City Bike Tour',
+    duration: '3 hours',
+    price: 89,
+  },
+  {
+    id: 'T002',
+    name: 'Historical Walk',
+    duration: '2 hours',
+    price: 45,
+  },
+  {
+    id: 'T003',
+    name: 'Food & Wine Tasting',
+    duration: '4 hours',
+    price: 125,
+  },
+  {
+    id: 'T004',
+    name: 'Mountain Hike Level 2',
+    duration: '6 hours',
+    price: 95,
+  },
+  {
+    id: 'T005',
+    name: 'Private Boat Charter',
+    duration: '4 hours',
+    price: 350,
+  },
+  {
+    id: 'T006',
+    name: 'Photography Walking Tour',
+    duration: '3 hours',
+    price: 75,
+  },
+  {
+    id: 'T007',
+    name: 'Culinary Market Experience',
+    duration: '2.5 hours',
+    price: 65,
+  },
+  {
+    id: 'T008',
+    name: 'Coastal Kayaking Adventure',
+    duration: '5 hours',
+    price: 110,
   },
 ];
 
