@@ -20,6 +20,37 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ activePage, onNavigate }) => {
   const { t } = useI18n();
+  const [logo, setLogo] = React.useState<string>('');
+  const [orgName, setOrgName] = React.useState<string>('TourCRM');
+
+  React.useEffect(() => {
+    const loadSettings = () => {
+      const settings = localStorage.getItem('tourcrm_settings');
+      if (settings) {
+        try {
+          const parsed = JSON.parse(settings);
+          if (parsed.logo) setLogo(parsed.logo);
+          if (parsed.orgName) setOrgName(parsed.orgName);
+        } catch (e) {
+          // ignore
+        }
+      }
+    };
+
+    loadSettings();
+
+    const handleStorageChange = () => {
+      loadSettings();
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('settingsUpdated', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('settingsUpdated', handleStorageChange);
+    };
+  }, []);
 
   const mainNav = [
     { name: t('nav_dashboard'), icon: LayoutDashboard, id: 'dashboard' },
@@ -82,12 +113,16 @@ const Sidebar: React.FC<SidebarProps> = ({ activePage, onNavigate }) => {
       {/* Logo Area */}
       <div className="h-16 flex items-center px-6 border-b border-gray-100 dark:border-gray-800">
         <button onClick={() => onNavigate('dashboard')} className="flex items-center gap-2.5 focus:outline-none">
-          <div className="w-8 h-8 bg-gradient-to-br from-indigo-600 to-indigo-700 rounded-lg flex items-center justify-center shadow-sm">
-            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-            </svg>
-          </div>
-          <span className="font-bold text-lg text-gray-900 dark:text-white tracking-tight">TourCRM</span>
+          {logo ? (
+            <img src={logo} alt={orgName} className="h-8 w-auto object-contain" />
+          ) : (
+            <div className="w-8 h-8 bg-gradient-to-br from-indigo-600 to-indigo-700 rounded-lg flex items-center justify-center shadow-sm">
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+              </svg>
+            </div>
+          )}
+          <span className="font-bold text-lg text-gray-900 dark:text-white tracking-tight">{orgName}</span>
         </button>
       </div>
 

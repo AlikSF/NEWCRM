@@ -971,7 +971,9 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ showToast }) => {
                currency: 'USD ($) - United States Dollar',
                emailLeads: true,
                emailBookings: true,
-               whatsappAlerts: false
+               whatsappAlerts: false,
+               logo: '',
+               primaryColor: '#4F46E5'
             };
          }
       }
@@ -982,15 +984,45 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ showToast }) => {
          currency: 'USD ($) - United States Dollar',
          emailLeads: true,
          emailBookings: true,
-         whatsappAlerts: false
+         whatsappAlerts: false,
+         logo: '',
+         primaryColor: '#4F46E5'
       };
    });
    const [isLoading, setIsLoading] = useState(false);
    const { language, setLanguage, t, setCurrency } = useI18n();
+   const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (file) {
+         if (file.size > 2 * 1024 * 1024) {
+            showToast?.('File size must be less than 2MB');
+            return;
+         }
+         const reader = new FileReader();
+         reader.onload = (event) => {
+            const result = event.target?.result as string;
+            setSettings({...settings, logo: result});
+         };
+         reader.readAsDataURL(file);
+      }
+   };
+
+   const handleLogoClick = () => {
+      fileInputRef.current?.click();
+   };
+
+   const handleColorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      setSettings({...settings, primaryColor: e.target.value});
+   };
 
    const handleSave = () => {
       setIsLoading(true);
       localStorage.setItem('tourcrm_settings', JSON.stringify(settings));
+
+      // Trigger event for other components to reload settings
+      window.dispatchEvent(new Event('settingsUpdated'));
 
       // Update currency in context
       const currencyMap = {
@@ -1212,21 +1244,51 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ showToast }) => {
                   <div className="p-6 flex flex-col md:flex-row gap-8 items-start">
                      <div className="flex-1 w-full">
                         <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Company Logo</label>
-                        <div className="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl p-8 flex flex-col items-center justify-center text-center hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer group">
-                           <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-900/20 rounded-full flex items-center justify-center text-indigo-500 mb-3 group-hover:scale-110 transition-transform">
-                              <Upload className="w-5 h-5" />
-                           </div>
-                           <p className="text-sm font-medium text-gray-900 dark:text-white">Click to upload logo</p>
-                           <p className="text-xs text-gray-500 mt-1">SVG, PNG, or JPG (max 2MB)</p>
+                        <input
+                           ref={fileInputRef}
+                           type="file"
+                           accept="image/svg+xml,image/png,image/jpeg"
+                           onChange={handleLogoUpload}
+                           className="hidden"
+                        />
+                        <div
+                           onClick={handleLogoClick}
+                           className="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl p-8 flex flex-col items-center justify-center text-center hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer group"
+                        >
+                           {settings.logo ? (
+                              <div className="flex flex-col items-center gap-3">
+                                 <img src={settings.logo} alt="Company Logo" className="max-h-24 max-w-full object-contain" />
+                                 <p className="text-xs text-gray-500">Click to change logo</p>
+                              </div>
+                           ) : (
+                              <>
+                                 <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-900/20 rounded-full flex items-center justify-center text-indigo-500 mb-3 group-hover:scale-110 transition-transform">
+                                    <Upload className="w-5 h-5" />
+                                 </div>
+                                 <p className="text-sm font-medium text-gray-900 dark:text-white">Click to upload logo</p>
+                                 <p className="text-xs text-gray-500 mt-1">SVG, PNG, or JPG (max 2MB)</p>
+                              </>
+                           )}
                         </div>
                      </div>
                      <div className="flex-1 w-full">
                         <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Primary Color</label>
-                        <div className="flex items-center gap-4 p-4 border border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50/50 dark:bg-gray-900/50">
-                           <div className="w-12 h-12 rounded-full bg-indigo-600 shadow-sm ring-4 ring-white dark:ring-gray-800"></div>
-                           <div>
-                              <p className="font-mono text-sm font-medium text-gray-900 dark:text-white">#4F46E5</p>
-                              <p className="text-xs text-gray-500 mt-0.5">Used for buttons and highlights.</p>
+                        <div className="relative">
+                           <input
+                              type="color"
+                              value={settings.primaryColor || '#4F46E5'}
+                              onChange={handleColorChange}
+                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                           />
+                           <div className="flex items-center gap-4 p-4 border border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50/50 dark:bg-gray-900/50 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800/50 transition-colors">
+                              <div
+                                 className="w-12 h-12 rounded-full shadow-sm ring-4 ring-white dark:ring-gray-800"
+                                 style={{ backgroundColor: settings.primaryColor || '#4F46E5' }}
+                              ></div>
+                              <div>
+                                 <p className="font-mono text-sm font-medium text-gray-900 dark:text-white">{settings.primaryColor || '#4F46E5'}</p>
+                                 <p className="text-xs text-gray-500 mt-0.5">Used for buttons and highlights.</p>
+                              </div>
                            </div>
                         </div>
                      </div>
