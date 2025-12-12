@@ -16,6 +16,7 @@ import { UPCOMING_BOOKINGS } from './constants';
 import { Booking, Notification } from './types';
 import Toast from './components/Toast';
 import NotificationDropdown from './components/NotificationDropdown';
+import { initializeDatabase } from './lib/initializeDatabase';
 
 const Header = ({
   searchTerm,
@@ -125,6 +126,10 @@ function App() {
     return stored ? JSON.parse(stored) : INITIAL_NOTIFICATIONS;
   });
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+
+  useEffect(() => {
+    initializeDatabase();
+  }, []);
 
   useEffect(() => {
     localStorage.setItem('tourcrm_notifications', JSON.stringify(notifications));
