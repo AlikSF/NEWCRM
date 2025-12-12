@@ -136,20 +136,23 @@ interface InboxPageProps {
   initialLeadName?: string | null;
 }
 
-export const InboxPage: React.FC<InboxPageProps> = ({ 
-  onAddBooking, 
-  showToast, 
-  searchTerm = '', 
-  initialLeadName 
+export const InboxPage: React.FC<InboxPageProps> = ({
+  onAddBooking,
+  showToast,
+  searchTerm = '',
+  initialLeadName
 }) => {
   const { t } = useI18n();
   const [selectedConversationId, setSelectedConversationId] = useState<number | null>(null);
   const [inputText, setInputText] = useState('');
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [localSearchTerm, setLocalSearchTerm] = useState('');
 
-  const filteredThreads = INBOX_THREADS.filter(thread => 
-    thread.sender.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    thread.preview.toLowerCase().includes(searchTerm.toLowerCase())
+  const combinedSearchTerm = localSearchTerm || searchTerm;
+
+  const filteredThreads = INBOX_THREADS.filter(thread =>
+    thread.sender.toLowerCase().includes(combinedSearchTerm.toLowerCase()) ||
+    thread.preview.toLowerCase().includes(combinedSearchTerm.toLowerCase())
   );
 
   useEffect(() => {
@@ -182,14 +185,14 @@ export const InboxPage: React.FC<InboxPageProps> = ({
           <div className="p-4 border-b border-gray-100 dark:border-gray-700">
             <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-3">{t('page_inbox_title')}</h2>
             <div className="relative">
-              <input 
-                type="text" 
-                placeholder="Search messages..." 
-                value={searchTerm}
-                readOnly
-                className="w-full pl-9 pr-4 py-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-100 dark:border-gray-600 rounded-lg text-sm focus:outline-none cursor-default opacity-60"
+              <input
+                type="text"
+                placeholder="Search messages..."
+                value={localSearchTerm}
+                onChange={(e) => setLocalSearchTerm(e.target.value)}
+                className="w-full pl-9 pr-4 py-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
               />
-              <Search className="w-4 h-4 text-gray-400 absolute left-3 top-2.5" />
+              <Search className="w-4 h-4 text-gray-400 absolute left-3 top-2.5 pointer-events-none" />
             </div>
           </div>
           <div className="flex-1 overflow-y-auto">
