@@ -8,17 +8,13 @@ import {
   Plus,
   MoreVertical,
   Filter,
-  Calendar,
-  X,
-  MessageCircle,
-  Mail,
-  Phone,
-  MapPin
+  Calendar
 } from 'lucide-react';
 import { KPI_DATA, RECENT_LEADS, UPCOMING_BOOKINGS } from '../constants';
 import { Booking, BookingStatus, LeadStatus, Lead } from '../types';
 import AddLeadModal from './AddLeadModal';
 import CreateBookingModal from './CreateBookingModal';
+import { LeadDetailPane } from './PlaceholderPages';
 
 // --- Sub-components for Cleaner Code ---
 
@@ -132,6 +128,19 @@ const Dashboard: React.FC<DashboardProps> = ({ bookings = UPCOMING_BOOKINGS, sea
     if (leadFilterTab === 'priority') return lead.status === 'Qualified';
     return true;
   });
+
+  const handleUpdateLead = (updatedLead: Lead) => {
+    setSelectedLeadId(null);
+  };
+
+  const handleOpenChat = (leadName: string) => {
+    setSelectedLeadId(null);
+    onNavigate?.('inbox');
+  };
+
+  const handleBookingUpdated = (booking: Booking) => {
+    setEditingBooking(null);
+  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -475,50 +484,13 @@ const Dashboard: React.FC<DashboardProps> = ({ bookings = UPCOMING_BOOKINGS, sea
               className="fixed inset-0 z-[60] bg-gray-900/40 backdrop-blur-sm transition-opacity duration-300"
               onClick={() => setSelectedLeadId(null)}
             />
-            <div className="fixed right-0 top-0 bottom-0 z-[70] w-full max-w-md bg-white dark:bg-gray-800 shadow-2xl overflow-y-auto">
-              <div className="sticky top-0 z-10 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex items-center justify-between">
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white">Lead Details</h3>
-                <button
-                  onClick={() => setSelectedLeadId(null)}
-                  className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                >
-                  <X className="w-5 h-5 text-gray-500" />
-                </button>
-              </div>
-
-              <div className="p-6 space-y-6">
-                <div className="flex items-center gap-4">
-                  <Avatar name={activeLead.name} />
-                  <div>
-                    <h4 className="text-lg font-semibold text-gray-900 dark:text-white">{activeLead.name}</h4>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">{activeLead.lastMessageTime}</p>
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Status</span>
-                    <StatusBadge status={activeLead.status} type="lead" />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Channel</span>
-                    <span className="text-sm text-gray-900 dark:text-white">{activeLead.channel}</span>
-                  </div>
-                </div>
-
-                <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-                  <div className="flex gap-2">
-                    <button className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors">
-                      <MessageCircle className="w-4 h-4" />
-                      Message
-                    </button>
-                    <button className="flex-1 flex items-center justify-center gap-2 px-4 py-2 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                      <Phone className="w-4 h-4" />
-                      Call
-                    </button>
-                  </div>
-                </div>
-              </div>
+            <div className="fixed inset-y-0 right-0 z-[70] w-full max-w-md bg-white dark:bg-gray-800 shadow-2xl transform transition-transform duration-300 ease-in-out border-l border-gray-200 dark:border-gray-700">
+              <LeadDetailPane
+                lead={activeLead}
+                onClose={() => setSelectedLeadId(null)}
+                onSave={handleUpdateLead}
+                onOpenChat={() => handleOpenChat(activeLead.name)}
+              />
             </div>
           </>
         )}
@@ -528,7 +500,8 @@ const Dashboard: React.FC<DashboardProps> = ({ bookings = UPCOMING_BOOKINGS, sea
           <CreateBookingModal
             isOpen={true}
             onClose={() => setEditingBooking(null)}
-            existingBooking={editingBooking}
+            bookingToEdit={editingBooking}
+            onBookingUpdated={handleBookingUpdated}
           />
         )}
       </div>

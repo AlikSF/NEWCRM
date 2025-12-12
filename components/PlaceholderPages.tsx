@@ -618,7 +618,7 @@ export const LeadsPage: React.FC<LeadsPageProps> = ({ searchTerm = '', onOpenCon
 };
 
 // Helper Component for Lead Details
-const LeadDetailPane = ({ lead, onClose, onSave, onOpenChat }: { lead: Lead, onClose: () => void, onSave: (l: Lead) => void, onOpenChat: () => void }) => {
+export const LeadDetailPane = ({ lead, onClose, onSave, onOpenChat }: { lead: Lead, onClose: () => void, onSave: (l: Lead) => void, onOpenChat: () => void }) => {
    // Extended mock state for the edit form since Lead type is limited
    const [formData, setFormData] = useState({
       ...lead,
