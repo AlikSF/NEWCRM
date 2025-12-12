@@ -104,9 +104,10 @@ const getKpiIcon = (label: string) => {
 interface DashboardProps {
   bookings?: Booking[];
   searchTerm?: string;
+  onNavigate?: (page: string) => void;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ bookings = UPCOMING_BOOKINGS, searchTerm = '' }) => {
+const Dashboard: React.FC<DashboardProps> = ({ bookings = UPCOMING_BOOKINGS, searchTerm = '', onNavigate }) => {
   const [isLeadModalOpen, setIsLeadModalOpen] = useState(false);
 
   return (
@@ -123,7 +124,10 @@ const Dashboard: React.FC<DashboardProps> = ({ bookings = UPCOMING_BOOKINGS, sea
             <p className="text-gray-500 dark:text-gray-400 mt-1">Good morning, Alex. Here's what's happening today.</p>
           </div>
           <div className="flex items-center gap-3">
-            <button className="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition shadow-sm">
+            <button
+              onClick={() => onNavigate?.('reports')}
+              className="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition shadow-sm"
+            >
               View Report
             </button>
             <button 
