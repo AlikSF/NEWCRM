@@ -3,6 +3,7 @@ import { X, Calendar, MapPin, Users, FileText, Flag, User } from 'lucide-react';
 import { Booking } from '../types';
 import { RECENT_LEADS, AVAILABLE_TOURS } from '../constants';
 import SearchableSelect from './SearchableSelect';
+import { useTheme } from '../context/ThemeContext';
 
 interface CreateBookingModalProps {
   isOpen: boolean;
@@ -21,6 +22,7 @@ const CreateBookingModal: React.FC<CreateBookingModalProps> = ({
   bookingToEdit,
   onBookingUpdated
 }) => {
+  const { formatCurrency } = useTheme();
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
   const [selectedTourId, setSelectedTourId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
@@ -40,7 +42,7 @@ const CreateBookingModal: React.FC<CreateBookingModalProps> = ({
   const tourOptions = AVAILABLE_TOURS.map(tour => ({
     id: tour.id,
     label: tour.name,
-    sublabel: `${tour.duration} · $${tour.price}`,
+    sublabel: `${tour.duration} · ${formatCurrency(tour.price)}`,
   }));
 
   // Populate form when editing or reset when creating

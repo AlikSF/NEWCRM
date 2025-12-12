@@ -968,7 +968,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ showToast }) => {
                orgName: 'Wanderlust Tours',
                contactEmail: 'alex@wanderlust.com',
                timezone: 'UTC-5 (EST)',
-               currency: 'USD ($)',
+               currency: 'USD ($) - United States Dollar',
                emailLeads: true,
                emailBookings: true,
                whatsappAlerts: false
@@ -979,18 +979,58 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ showToast }) => {
          orgName: 'Wanderlust Tours',
          contactEmail: 'alex@wanderlust.com',
          timezone: 'UTC-5 (EST)',
-         currency: 'USD ($)',
+         currency: 'USD ($) - United States Dollar',
          emailLeads: true,
          emailBookings: true,
          whatsappAlerts: false
       };
    });
    const [isLoading, setIsLoading] = useState(false);
-   const { language, setLanguage, t } = useI18n();
+   const { language, setLanguage, t, setCurrency } = useI18n();
 
    const handleSave = () => {
       setIsLoading(true);
       localStorage.setItem('tourcrm_settings', JSON.stringify(settings));
+
+      // Update currency in context
+      const currencyMap = {
+         'USD ($) - United States Dollar': { code: 'USD', symbol: '$', name: 'United States Dollar' },
+         'EUR (€) - Euro': { code: 'EUR', symbol: '€', name: 'Euro' },
+         'GBP (£) - British Pound': { code: 'GBP', symbol: '£', name: 'British Pound' },
+         'JPY (¥) - Japanese Yen': { code: 'JPY', symbol: '¥', name: 'Japanese Yen' },
+         'CNY (¥) - Chinese Yuan': { code: 'CNY', symbol: '¥', name: 'Chinese Yuan' },
+         'AUD ($) - Australian Dollar': { code: 'AUD', symbol: '$', name: 'Australian Dollar' },
+         'CAD ($) - Canadian Dollar': { code: 'CAD', symbol: '$', name: 'Canadian Dollar' },
+         'CHF (Fr) - Swiss Franc': { code: 'CHF', symbol: 'Fr', name: 'Swiss Franc' },
+         'SGD ($) - Singapore Dollar': { code: 'SGD', symbol: '$', name: 'Singapore Dollar' },
+         'HKD ($) - Hong Kong Dollar': { code: 'HKD', symbol: '$', name: 'Hong Kong Dollar' },
+         'NZD ($) - New Zealand Dollar': { code: 'NZD', symbol: '$', name: 'New Zealand Dollar' },
+         'THB (฿) - Thai Baht': { code: 'THB', symbol: '฿', name: 'Thai Baht' },
+         'AED (د.إ) - UAE Dirham': { code: 'AED', symbol: 'د.إ', name: 'UAE Dirham' },
+         'INR (₹) - Indian Rupee': { code: 'INR', symbol: '₹', name: 'Indian Rupee' },
+         'MYR (RM) - Malaysian Ringgit': { code: 'MYR', symbol: 'RM', name: 'Malaysian Ringgit' },
+         'IDR (Rp) - Indonesian Rupiah': { code: 'IDR', symbol: 'Rp', name: 'Indonesian Rupiah' },
+         'PHP (₱) - Philippine Peso': { code: 'PHP', symbol: '₱', name: 'Philippine Peso' },
+         'VND (₫) - Vietnamese Dong': { code: 'VND', symbol: '₫', name: 'Vietnamese Dong' },
+         'KRW (₩) - South Korean Won': { code: 'KRW', symbol: '₩', name: 'South Korean Won' },
+         'TWD (NT$) - Taiwan Dollar': { code: 'TWD', symbol: 'NT$', name: 'Taiwan Dollar' },
+         'TRY (₺) - Turkish Lira': { code: 'TRY', symbol: '₺', name: 'Turkish Lira' },
+         'ZAR (R) - South African Rand': { code: 'ZAR', symbol: 'R', name: 'South African Rand' },
+         'MXN ($) - Mexican Peso': { code: 'MXN', symbol: '$', name: 'Mexican Peso' },
+         'BRL (R$) - Brazilian Real': { code: 'BRL', symbol: 'R$', name: 'Brazilian Real' },
+         'ARS ($) - Argentine Peso': { code: 'ARS', symbol: '$', name: 'Argentine Peso' },
+         'COP ($) - Colombian Peso': { code: 'COP', symbol: '$', name: 'Colombian Peso' },
+         'CLP ($) - Chilean Peso': { code: 'CLP', symbol: '$', name: 'Chilean Peso' },
+         'EGP (£) - Egyptian Pound': { code: 'EGP', symbol: '£', name: 'Egyptian Pound' },
+         'MAD (د.م.) - Moroccan Dirham': { code: 'MAD', symbol: 'د.م.', name: 'Moroccan Dirham' },
+         'RUB (₽) - Russian Ruble': { code: 'RUB', symbol: '₽', name: 'Russian Ruble' },
+      };
+
+      const selectedCurrency = currencyMap[settings.currency as keyof typeof currencyMap];
+      if (selectedCurrency) {
+         setCurrency(selectedCurrency);
+      }
+
       setTimeout(() => {
          setIsLoading(false);
          showToast?.('Settings saved successfully');
@@ -1348,7 +1388,7 @@ const INITIAL_TOURS = [
 ];
 
 export const ToursPage: React.FC<ToursPageProps> = ({ searchTerm = '', showToast }) => {
-   const { t } = useI18n();
+   const { t, formatCurrency } = useI18n();
    const [tours, setTours] = useState(INITIAL_TOURS);
    const [selectedTour, setSelectedTour] = useState<typeof INITIAL_TOURS[0] | null>(null);
    const [activeActionMenuId, setActiveActionMenuId] = useState<number | null>(null);
@@ -1486,7 +1526,7 @@ export const ToursPage: React.FC<ToursPageProps> = ({ searchTerm = '', showToast
                               {tour.duration}
                            </td>
                            <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">
-                              ${tour.price}
+                              {formatCurrency(tour.price)}
                            </td>
                            <td className="px-6 py-4">
                               <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${
