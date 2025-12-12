@@ -778,20 +778,36 @@ interface BookingsPageProps {
   bookings: Booking[];
   searchTerm?: string;
   onUpdateBooking?: (booking: Booking) => void;
+  onAddBooking?: (booking: Booking) => void;
+  showToast?: (message: string) => void;
 }
 
-export const BookingsPage: React.FC<BookingsPageProps> = ({ 
-  bookings, 
-  searchTerm = '', 
-  onUpdateBooking 
+export const BookingsPage: React.FC<BookingsPageProps> = ({
+  bookings,
+  searchTerm = '',
+  onUpdateBooking,
+  onAddBooking,
+  showToast
 }) => {
   const { t } = useI18n();
   const [editingBooking, setEditingBooking] = useState<Booking | null>(null);
+  const [isCreatingBooking, setIsCreatingBooking] = useState(false);
 
-  const filteredBookings = bookings.filter(b => 
+  const filteredBookings = bookings.filter(b =>
     b.clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
     b.tourName.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handleBookingCreated = (booking: Booking) => {
+    onAddBooking?.(booking);
+    showToast?.('Booking created successfully');
+    setIsCreatingBooking(false);
+  };
+
+  const handleBookingUpdated = (booking: Booking) => {
+    onUpdateBooking?.(booking);
+    setEditingBooking(null);
+  };
 
   return (
     <div className="p-6 lg:p-8 h-full flex flex-col">
@@ -801,16 +817,9 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({
           <button className="px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-sm font-medium bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200">
              Export
           </button>
-          <button 
+          <button
              className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors shadow-sm"
-             onClick={() => setEditingBooking({
-                id: '', // Will be generated
-                tourName: '',
-                date: new Date().toISOString().split('T')[0],
-                clientName: 'New Client',
-                people: 2,
-                status: 'Confirmed'
-             } as Booking)}
+             onClick={() => setIsCreatingBooking(true)}
           >
              Add Booking
           </button>
@@ -875,22 +884,20 @@ export const BookingsPage: React.FC<BookingsPageProps> = ({
         </table>
       </div>
 
+      {isCreatingBooking && (
+        <CreateBookingModal
+          isOpen={true}
+          onClose={() => setIsCreatingBooking(false)}
+          onBookingCreated={handleBookingCreated}
+        />
+      )}
+
       {editingBooking && (
-        <CreateBookingModal 
-          isOpen={true} 
-          onClose={() => setEditingBooking(null)} 
-          bookingToEdit={editingBooking.id ? editingBooking : null} // Check ID to determine if editing or creating
-          leadName={!editingBooking.id ? editingBooking.clientName : undefined}
-          onBookingCreated={(b) => {
-             // In a real app, this would append to list.
-             // Since props are read-only here or handled by parent, we just close.
-             if (onUpdateBooking) onUpdateBooking(b); // Reuse update for create in this mock
-             setEditingBooking(null);
-          }}
-          onBookingUpdated={(b) => {
-            if (onUpdateBooking) onUpdateBooking(b);
-            setEditingBooking(null);
-          }}
+        <CreateBookingModal
+          isOpen={true}
+          onClose={() => setEditingBooking(null)}
+          bookingToEdit={editingBooking}
+          onBookingUpdated={handleBookingUpdated}
         />
       )}
     </div>
@@ -943,22 +950,48 @@ export const TeamPage = () => {
 };
 
 // --- Settings Page ---
-export const SettingsPage = () => {
-   const [settings, setSettings] = useState({
-      orgName: 'Wanderlust Tours',
-      contactEmail: 'alex@wanderlust.com',
-      timezone: 'UTC-5 (EST)',
-      currency: 'USD ($)',
-      emailLeads: true,
-      emailBookings: true,
-      whatsappAlerts: false
+interface SettingsPageProps {
+   showToast?: (message: string) => void;
+}
+
+export const SettingsPage: React.FC<SettingsPageProps> = ({ showToast }) => {
+   const [settings, setSettings] = useState(() => {
+      const saved = localStorage.getItem('tourcrm_settings');
+      if (saved) {
+         try {
+            return JSON.parse(saved);
+         } catch (e) {
+            return {
+               orgName: 'Wanderlust Tours',
+               contactEmail: 'alex@wanderlust.com',
+               timezone: 'UTC-5 (EST)',
+               currency: 'USD ($)',
+               emailLeads: true,
+               emailBookings: true,
+               whatsappAlerts: false
+            };
+         }
+      }
+      return {
+         orgName: 'Wanderlust Tours',
+         contactEmail: 'alex@wanderlust.com',
+         timezone: 'UTC-5 (EST)',
+         currency: 'USD ($)',
+         emailLeads: true,
+         emailBookings: true,
+         whatsappAlerts: false
+      };
    });
    const [isLoading, setIsLoading] = useState(false);
    const { language, setLanguage, t } = useI18n();
 
    const handleSave = () => {
       setIsLoading(true);
-      setTimeout(() => setIsLoading(false), 1000);
+      localStorage.setItem('tourcrm_settings', JSON.stringify(settings));
+      setTimeout(() => {
+         setIsLoading(false);
+         showToast?.('Settings saved successfully');
+      }, 800);
    };
 
    return (

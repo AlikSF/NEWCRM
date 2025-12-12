@@ -125,14 +125,16 @@ function App() {
               />
             )}
             {activePage === 'bookings' && (
-              <BookingsPage 
-                bookings={bookings} 
-                searchTerm={searchTerm} 
+              <BookingsPage
+                bookings={bookings}
+                searchTerm={searchTerm}
                 onUpdateBooking={updateBooking}
+                onAddBooking={addBooking}
+                showToast={showToast}
               />
             )}
             {activePage === 'team' && <TeamPage />}
-            {activePage === 'settings' && <SettingsPage />}
+            {activePage === 'settings' && <SettingsPage showToast={showToast} />}
             {activePage === 'tours' && <ToursPage searchTerm={searchTerm} showToast={showToast} />}
             {activePage === 'reports' && <ReportsPage />}
             
