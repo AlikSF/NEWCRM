@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import AddLeadModal from './AddLeadModal';
+import CreateTourModal from './CreateTourModal';
 import { 
   Mail, 
   User, 
@@ -1201,6 +1202,7 @@ export const SettingsPage = () => {
 // --- Tours Page ---
 interface ToursPageProps {
    searchTerm?: string;
+   showToast?: (message: string) => void;
 }
 
 const INITIAL_TOURS = [
@@ -1266,17 +1268,38 @@ const INITIAL_TOURS = [
    },
 ];
 
-export const ToursPage: React.FC<ToursPageProps> = ({ searchTerm = '' }) => {
+export const ToursPage: React.FC<ToursPageProps> = ({ searchTerm = '', showToast }) => {
    const { t } = useI18n();
    const [tours, setTours] = useState(INITIAL_TOURS);
    const [selectedTour, setSelectedTour] = useState<typeof INITIAL_TOURS[0] | null>(null);
    const [activeActionMenuId, setActiveActionMenuId] = useState<number | null>(null);
+   const [isCreateTourModalOpen, setIsCreateTourModalOpen] = useState(false);
 
    const filteredTours = tours.filter(t => t.name.toLowerCase().includes(searchTerm.toLowerCase()));
 
    const handleSaveTour = (updatedTour: typeof INITIAL_TOURS[0]) => {
       setTours(prev => prev.map(t => t.id === updatedTour.id ? updatedTour : t));
       setSelectedTour(null);
+   };
+
+   const handleCreateTour = (tourData: { name: string; location: string; duration: string; price: number; active: boolean }) => {
+      const newTour = {
+         id: tours.length > 0 ? Math.max(...tours.map(t => t.id)) + 1 : 1,
+         name: tourData.name,
+         price: tourData.price,
+         duration: tourData.duration,
+         active: tourData.active,
+         description: '',
+         image: 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&q=80&w=200',
+         tags: [],
+         maxPeople: 0,
+         difficulty: 'Easy',
+         location: tourData.location,
+         bookingsCount: 0,
+         revenue: 0
+      };
+      setTours(prev => [newTour, ...prev]);
+      showToast?.('Tour created successfully');
    };
 
    // Close action menu when clicking outside
@@ -1331,7 +1354,10 @@ export const ToursPage: React.FC<ToursPageProps> = ({ searchTerm = '' }) => {
          <div className="p-6 lg:p-8 h-full flex flex-col">
             <div className="flex justify-between items-center mb-6">
                <h2 className="text-3xl font-bold text-gray-900 dark:text-white">{t('page_tours_title')}</h2>
-               <button className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors shadow-sm shadow-indigo-200 dark:shadow-none">
+               <button
+                  onClick={() => setIsCreateTourModalOpen(true)}
+                  className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors shadow-sm shadow-indigo-200 dark:shadow-none"
+               >
                   Create Tour
                </button>
             </div>
@@ -1423,6 +1449,12 @@ export const ToursPage: React.FC<ToursPageProps> = ({ searchTerm = '' }) => {
                </div>
             </div>
          </div>
+
+         <CreateTourModal
+            isOpen={isCreateTourModalOpen}
+            onClose={() => setIsCreateTourModalOpen(false)}
+            onCreateTour={handleCreateTour}
+         />
       </div>
    );
 };

@@ -133,7 +133,7 @@ function App() {
             )}
             {activePage === 'team' && <TeamPage />}
             {activePage === 'settings' && <SettingsPage />}
-            {activePage === 'tours' && <ToursPage searchTerm={searchTerm} />}
+            {activePage === 'tours' && <ToursPage searchTerm={searchTerm} showToast={showToast} />}
             {activePage === 'reports' && <ReportsPage />}
             
             {['support'].includes(activePage) && (
