@@ -13,18 +13,11 @@ A complete tour management CRM system with local database storage.
 - Reports and analytics
 - Dark mode support
 
-## Database Setup
+## Database
 
-This app uses Bolt's managed database for data persistence.
+This app uses SQL.js for local browser-based storage. All data is stored in your browser's localStorage, so no external database service is required.
 
-### Setting Up the Database
-
-1. Go to Project Settings in Bolt
-2. Click on the "Database" section
-3. Copy the contents of `database-schema.sql` and paste it into the database query editor
-4. Run the query to create all required tables
-
-The app will automatically initialize the database with sample data on first run.
+The database is automatically initialized with sample data when you first run the app.
 
 ## Run Locally
 
@@ -44,7 +37,7 @@ The app will automatically initialize the database with sample data on first run
 
 ## Database Structure
 
-The database includes the following tables:
+The local database includes the following tables:
 - `organizations` - Tour company information
 - `leads` - Potential customers
 - `tours` - Tour catalog
@@ -53,4 +46,4 @@ The database includes the following tables:
 - `inbox_messages` - Messages within threads
 - `notifications` - User notifications
 
-All data is securely stored in the cloud database.
+All data persists in your browser's localStorage.
