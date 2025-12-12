@@ -28,3 +28,10 @@ export interface KPIMetric {
   trend?: string; // e.g., "+12%"
   trendUp?: boolean;
 }
+
+export interface Notification {
+  id: string;
+  message: string;
+  timestamp: string;
+  isRead: boolean;
+}
